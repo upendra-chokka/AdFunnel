@@ -1,4 +1,5 @@
 import { MetaInsightRecord, MetaInsightsResponse } from "./types";
+import { getEffectiveMetaCredentials } from "../credentials-store";
 
 export class MetaApiClient {
   private apiVersion = "v21.0";
@@ -6,7 +7,7 @@ export class MetaApiClient {
   private accessToken?: string;
 
   constructor(accessToken?: string) {
-    this.accessToken = accessToken || process.env.META_SYSTEM_USER_TOKEN;
+    this.accessToken = accessToken || getEffectiveMetaCredentials().systemUserToken;
   }
 
   /**

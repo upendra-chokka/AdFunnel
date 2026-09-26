@@ -1,4 +1,5 @@
 import { GoogleAdsRow } from "./types";
+import { getEffectiveGoogleCredentials } from "../credentials-store";
 
 export class GoogleAdsApiClient {
   private developerToken?: string;
@@ -6,9 +7,10 @@ export class GoogleAdsApiClient {
   private customerId?: string;
 
   constructor(customerId?: string) {
-    this.customerId = customerId || process.env.GOOGLE_ADS_CUSTOMER_ID;
-    this.developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
-    this.refreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN;
+    const creds = getEffectiveGoogleCredentials();
+    this.customerId = customerId || creds.customerId;
+    this.developerToken = creds.developerToken;
+    this.refreshToken = creds.refreshToken;
   }
 
   /**

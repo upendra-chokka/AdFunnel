@@ -32,7 +32,7 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { userRole, unattributedLeads, demoMode } = useApp();
+  const { userRole, unattributedLeads, demoMode, dbStatus, currentUser } = useApp();
 
   return (
     <aside className="w-64 bg-slate-950 text-slate-300 flex flex-col h-screen fixed left-0 top-0 z-30 select-none border-r border-slate-800/80 shadow-2xl">
@@ -109,36 +109,51 @@ export function Sidebar() {
 
       {/* Database & Tenant Footer */}
       <div className="p-4 border-t border-slate-800/80 bg-slate-900/40 space-y-3">
-        {/* Phase 2 Database Indicator */}
+        {/* Database Status Indicator */}
         <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-[11px]">
           <span className="flex items-center gap-1.5 text-slate-300 font-medium">
             <Database className="h-3.5 w-3.5 text-blue-400" />
-            PostgreSQL:
+            Database:
           </span>
-          <span className="font-semibold text-emerald-400 flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-            Supabase Ready
+          <span
+            className={`font-semibold flex items-center gap-1.5 ${
+              dbStatus.connected ? "text-emerald-400" : "text-amber-400"
+            }`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                dbStatus.connected ? "bg-emerald-400 animate-ping" : "bg-amber-400"
+              }`}
+            ></span>
+            {dbStatus.connected ? "Supabase Live" : "Demo Preview"}
           </span>
         </div>
 
         {/* User Role & Agency */}
         <div className="flex items-center justify-between text-xs pt-1">
-          <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            title="Click to switch user or sign in"
+          >
             <div className="h-7 w-7 rounded-full bg-blue-600/30 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-xs">
-              U
+              {currentUser?.fullName?.charAt(0) || "U"}
             </div>
             <div>
-              <div className="font-semibold text-slate-200 text-xs truncate w-24">
-                Upendra (Agency)
+              <div className="font-semibold text-slate-200 text-xs truncate w-28">
+                {currentUser?.fullName || "Upendra (Agency)"}
               </div>
               <div className="text-[10px] text-slate-400 capitalize">
                 {userRole.replace("_", " ")}
               </div>
             </div>
-          </div>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-            v1.2
-          </span>
+          </Link>
+          <Link
+            href="/login"
+            className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-colors"
+          >
+            Switch
+          </Link>
         </div>
       </div>
     </aside>

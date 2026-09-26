@@ -55,12 +55,14 @@ export interface GhlPaymentResponse {
   createdAt: string;
 }
 
+import { getEffectiveGhlCredentials } from "../credentials-store";
+
 export class GhlApiClient {
   private baseUrl = "https://services.leadconnectorhq.com";
   private accessToken?: string;
 
   constructor(accessToken?: string) {
-    this.accessToken = accessToken || process.env.GHL_ACCESS_TOKEN;
+    this.accessToken = accessToken || getEffectiveGhlCredentials().apiKey;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

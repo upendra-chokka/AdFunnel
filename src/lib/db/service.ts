@@ -6,10 +6,11 @@ export class DatabaseService {
   private isDemoMode: boolean;
 
   constructor() {
-    this.isDemoMode =
-      typeof window !== "undefined"
-        ? process.env.NEXT_PUBLIC_DEMO_MODE !== "false"
-        : true;
+    const hasLiveSupabase = Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("mock-adfunnel")
+    );
+    this.isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true" || !hasLiveSupabase;
   }
 
   async getClients(): Promise<Client[]> {
