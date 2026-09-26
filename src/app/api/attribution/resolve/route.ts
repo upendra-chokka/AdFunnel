@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { attributionEngine } from "@/lib/attribution/engine";
+import { auditLogger } from "@/lib/security/audit-logger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +19,14 @@ export async function POST(req: NextRequest) {
       campaignId,
       treatmentId
     );
+
+    auditLogger.log({
+      agencyId: "agency_aura_001",
+      action: "attribution.resolve_quarantined",
+      resourceType: "lead_journey",
+      resourceId: leadId,
+      metadata: { campaignId, treatmentId, tier: "Manual" },
+    });
 
     return NextResponse.json({
       success: true,

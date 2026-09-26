@@ -1,14 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleGhlWebhook } from "@/lib/integrations/ghl/webhook-handler";
+import { webhookRateLimiter } from "@/lib/security/rate-limiter";
+import { auditLogger } from "@/lib/security/audit-logger";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "ghl_webhook_source";
+    const rateCheck = webhookRateLimiter.check(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Webhook rate limit exceeded." },
+        { status: 429 }
+      );
+    }
+
     const rawBody = await req.text();
     const signature = req.headers.get("x-ghl-signature") || req.headers.get("X-GHL-Signature");
 
     const result = await handleGhlWebhook(rawBody, signature);
 
     if (result.status === "signature_failed") {
+      auditLogger.log({
+        agencyId: "system",
+        action: "webhook.signature_failed",
+        resourceType: "ghl_webhook",
+        metadata: { ip },
+      });
       return NextResponse.json(
         { error: "Invalid cryptographic signature" },
         { status: 401 }
@@ -21,6 +38,17 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    auditLogger.log({
+      agencyId: "system",
+      action: "webhook.processed",
+      resourceType: "ghl_webhook",
+      resourceId: result.eventId,
+      metadata: {
+        status: result.status,
+        derivedType: result.derivedType,
+      },
+    });
 
     // Return 200 OK for both processed and idempotent duplicate events
     return NextResponse.json({
